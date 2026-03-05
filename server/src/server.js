@@ -1,63 +1,90 @@
-import inviteRoutes from "./routes/invite.routes.js";
-import activityRoutes from "./routes/activity.routes.js";
-import commentRoutes from "./routes/comment.routes.js";
-import taskRoutes from "./routes/task.routes.js";
-import boardRoutes from "./routes/board.routes.js";
-import workspaceRoutes from "./routes/workspace.routes.js";
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
-import morgan from "morgan";
 import http from "http";
 import { Server } from "socket.io";
+import dotenv from "dotenv";
 
-import { connectDB } from "./config/db.js";
-import { notFound, errorHandler } from "./middleware/error.js";
+import connectDB from "./config/db.js";
+
+// routes (adjust names if your files differ)
 import authRoutes from "./routes/auth.routes.js";
-import { initSockets } from "./sockets/index.js";
+import workspaceRoutes from "./routes/workspace.routes.js";
+import boardRoutes from "./routes/board.routes.js";
+import taskRoutes from "./routes/task.routes.js";
+import inviteRoutes from "./routes/invite.routes.js";
+import activityRoutes from "./routes/activity.routes.js";
 
 dotenv.config();
 
 const app = express();
-app.use(express.json({ limit: "2mb" }));
-app.use(morgan("dev"));
+
+// ✅ Middlewares
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// ✅ CORS for Vercel + Local
+const allowedOrigins = [
+  process.env.CLIENT_URL,       // Vercel URL (set later)
+  "http://localhost:5173",
+].filter(Boolean);
 
 app.use(
   cors({
-    origin: process.env.CLIENT_ORIGIN || "http://localhost:5173",
+    origin: (origin, cb) => {
+      if (!origin) return cb(null, true); // Postman/no-origin
+      if (allowedOrigins.includes(origin)) return cb(null, true);
+      return cb(new Error("CORS blocked: " + origin));
+    },
     credentials: true,
   })
 );
+
+// ✅ Create HTTP server + Socket.io
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: allowedOrigins,
+    credentials: true,
+  },
+});
+
+// ✅ Socket rooms
+io.on("connection", (socket) => {
+  socket.on("join", ({ workspaceId }) => {
+    if (workspaceId) socket.join(`ws:${workspaceId}`);
+  });
+
+  socket.on("leave", ({ workspaceId }) => {
+    if (workspaceId) socket.leave(`ws:${workspaceId}`);
+  });
+});
+
+// ✅ Make io available in routes (req.io)
 app.use((req, res, next) => {
   req.io = io;
   next();
 });
 
-app.get("/", (req, res) => res.json({ ok: true, name: "TaskFlow Pro API" }));
-
-
+// ✅ Routes
+app.get("/", (req, res) => res.send("TaskFlow Pro API running"));
 app.use("/api/auth", authRoutes);
 app.use("/api/workspaces", workspaceRoutes);
 app.use("/api/boards", boardRoutes);
 app.use("/api/tasks", taskRoutes);
-app.use("/api/comments", commentRoutes);
-app.use("/api/activity", activityRoutes);
 app.use("/api/invites", inviteRoutes);
+app.use("/api/activity", activityRoutes);
 
-// (we will add workspace/board/task routes next)
-app.use(notFound);
-app.use(errorHandler);
-
+// ✅ Start
 const PORT = process.env.PORT || 5000;
 
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
-
-initSockets(io);
-
-await connectDB(process.env.MONGO_URI);
-
-server.listen(PORT, () => {
-  console.log(`✅ Server running on http://localhost:${PORT}`);
-});
+connectDB(process.env.MONGO_URI)
+  .then(() => {
+    server.listen(PORT, () => {
+      console.log(`✅ Server running on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error("❌ DB connection failed:", err.message);
+    process.exit(1);
+  });
