@@ -1,15 +1,13 @@
 import mongoose from "mongoose";
 
-export async function connectDB(uri) {
-  if (!uri) {
-    console.error("❌ MONGO_URI missing");
-    process.exit(1);
+export default async function connectDB(MONGO_URI) {
+  if (!MONGO_URI) {
+    throw new Error("MONGO_URI is missing");
   }
-  try {
-    await mongoose.connect(uri);
-    console.log("✅ MongoDB connected");
-  } catch (e) {
-    console.error("❌ MongoDB connection failed:", e.message);
-    process.exit(1);
-  }
+
+  mongoose.set("strictQuery", true);
+
+  await mongoose.connect(MONGO_URI);
+
+  console.log("✅ MongoDB connected");
 }
