@@ -1,0 +1,106 @@
+:root{
+  --bg:#070a0f;
+  --card:#0b1220;
+  --line:rgba(255,255,255,.10);
+  --text:#eaf2ff;
+  --muted:rgba(234,242,255,.68);
+  --accent:#6ae3ff;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:radial-gradient(900px 600px at 20% 10%, rgba(106,227,255,.08), transparent 60%),
+             radial-gradient(900px 600px at 80% 30%, rgba(120,92,255,.10), transparent 60%),
+             var(--bg);
+  color:var(--text);
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+}
+a{color:inherit}
+.container{max-width:1100px;margin:0 auto;padding:24px}
+.card{
+  background:rgba(11,18,32,.75);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:18px;
+  box-shadow:0 10px 40px rgba(0,0,0,.35);
+}
+.nav{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:14px 0;margin-bottom:18px;border-bottom:1px solid rgba(255,255,255,.06);
+}
+.brand{display:flex;gap:10px;align-items:center;font-weight:900;letter-spacing:.5px}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--accent)}
+.btn{
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.06);
+  color:var(--text);
+  padding:10px 12px;
+  border-radius:12px;
+  cursor:pointer;
+  font-weight:800;
+}
+.btn:hover{background:rgba(255,255,255,.10)}
+.input{
+  width:100%;
+  margin-top:8px;
+  padding:12px 12px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:rgba(0,0,0,.25);
+  color:var(--text);
+}
+.grid{display:grid;gap:14px}
+.grid2{grid-template-columns:1fr 1fr}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+
+.appShell{
+  display:grid;
+  grid-template-columns: 260px 1fr;
+  min-height:100vh;
+}
+
+.sidebar{
+  position:sticky;
+  top:0;
+  height:100vh;
+  padding:18px;
+  border-right:1px solid rgba(255,255,255,.08);
+  background:rgba(5,8,12,.55);
+  backdrop-filter: blur(10px);
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+
+.sideBrand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-weight:1000;
+  letter-spacing:.6px;
+}
+
+.sideUser{
+  padding:12px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.03);
+}
+
+.sideNav{ display:grid; gap:8px; }
+
+.sideItem{
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.08);
+  text-decoration:none;
+  font-weight:900;
+}
+
+.mainArea{
+  padding:24px;
+}
+.container{ max-width: 1200px; }
+.nav{ display:none; } /* we now use sidebar */
